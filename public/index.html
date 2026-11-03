@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#151712">
+  <meta name="description" content="사진과 무게로 고물상 예상 매입가와 실수익을 계산합니다.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+  <title>줍줍값 · 고물 감정기</title>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="줍줍값 홈">
+      <span class="brand-mark" aria-hidden="true">₩</span>
+      <span><strong>줍줍값</strong><small>고물 감정기</small></span>
+    </a>
+    <button id="installButton" class="ghost-button" type="button" hidden>앱 설치</button>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="eyebrow">SCRAP VALUE CHECKER</p>
+      <h1 id="hero-title">주울까,<br><em>지나칠까?</em></h1>
+      <p>사진을 남기고 재질과 무게를 입력하면 예상 매입가와 이동비를 뺀 실수익을 계산합니다.</p>
+      <div class="status-pill"><span></span> 오프라인에서도 계산 가능</div>
+    </section>
+
+    <form id="estimateForm" class="stack" novalidate>
+      <section class="card photo-card" aria-labelledby="photo-title">
+        <div class="section-heading">
+          <span class="step">01</span>
+          <div><h2 id="photo-title">물건 사진</h2><p>기록용 사진입니다. 재질은 직접 선택해 주세요.</p></div>
+        </div>
+        <label class="camera-zone" for="photoInput">
+          <input id="photoInput" type="file" accept="image/*" capture="environment">
+          <img id="photoPreview" alt="선택한 고물 사진 미리보기" hidden>
+          <span id="cameraPrompt" class="camera-prompt">
+            <span class="camera-icon" aria-hidden="true">◎</span>
+            <strong>카메라 열기</strong>
+            <small>또는 사진 보관함에서 선택</small>
+          </span>
+        </label>
+      </section>
+
+      <section class="card" aria-labelledby="material-title">
+        <div class="section-heading">
+          <span class="step">02</span>
+          <div><h2 id="material-title">재질과 상태</h2><p>고물상에서 분류할 기준으로 골라주세요.</p></div>
+        </div>
+
+        <label class="field">
+          <span>주요 재질</span>
+          <select id="material" required>
+            <option value="steel">고철 · 철</option>
+            <option value="stainless">스테인리스</option>
+            <option value="aluminum">알루미늄</option>
+            <option value="brass">황동</option>
+            <option value="copper">구리 · 동관</option>
+            <option value="wire">피복 전선</option>
+          </select>
+        </label>
+
+        <fieldset class="condition-group">
+          <legend>분리 상태</legend>
+          <label><input type="radio" name="condition" value="0.95" checked><span><strong>깔끔하게 분리됨</strong><small>금속 외 부품이 거의 없음</small></span></label>
+          <label><input type="radio" name="condition" value="0.65"><span><strong>혼합 상태</strong><small>플라스틱·고무 등이 붙어 있음</small></span></label>
+          <label><input type="radio" name="condition" value="0.35"><span><strong>혼합 폐가전</strong><small>모터·기판·외장재가 섞여 있음</small></span></label>
+        </fieldset>
+
+        <div class="rate-panel">
+          <div><strong>적용 단가</strong><small>샘플값이므로 거래할 고물상 단가로 수정하세요.</small></div>
+          <div class="two-columns">
+            <label class="field compact"><span>최저 원/kg</span><input id="minRate" type="number" inputmode="numeric" min="0" required></label>
+            <label class="field compact"><span>최고 원/kg</span><input id="maxRate" type="number" inputmode="numeric" min="0" required></label>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="numbers-title">
+        <div class="section-heading">
+          <span class="step">03</span>
+          <div><h2 id="numbers-title">무게와 비용</h2><p>정확하지 않아도 대략 입력하면 범위로 보여줍니다.</p></div>
+        </div>
+        <div class="weight-field">
+          <label for="weight">예상 무게</label>
+          <div><input id="weight" type="number" inputmode="decimal" min="0.1" step="0.1" placeholder="20" required><span>kg</span></div>
+        </div>
+        <div class="quick-weights" aria-label="빠른 무게 선택">
+          <button type="button" data-weight="5">5kg</button>
+          <button type="button" data-weight="10">10kg</button>
+          <button type="button" data-weight="20">20kg</button>
+          <button type="button" data-weight="50">50kg</button>
+        </div>
+        <div class="two-columns">
+          <label class="field"><span>왕복 운반비</span><div class="suffix-input"><input id="transportCost" type="number" inputmode="numeric" min="0" value="0"><span>원</span></div></label>
+          <label class="field"><span>최소 희망수익</span><div class="suffix-input"><input id="minimumProfit" type="number" inputmode="numeric" min="0" value="5000"><span>원</span></div></label>
+        </div>
+        <label class="field"><span>수거 지역 <small>(선택)</small></span><input id="location" type="text" maxlength="30" placeholder="예: 강동구 길동"></label>
+      </section>
+
+      <p id="formError" class="form-error" role="alert" hidden></p>
+      <button class="primary-button" type="submit"><span>예상 수익 계산하기</span><span aria-hidden="true">→</span></button>
+    </form>
+
+    <section id="result" class="result-card" aria-live="polite" hidden>
+      <div class="result-topline"><span id="resultBadge">판정</span><button id="shareButton" class="icon-button" type="button">공유</button></div>
+      <p class="result-label">운반비 차감 예상수익</p>
+      <h2 id="netValue">0원 ~ 0원</h2>
+      <p id="verdictText" class="verdict-text"></p>
+      <div class="result-grid">
+        <div><span>고물 매입가</span><strong id="grossValue">0원 ~ 0원</strong></div>
+        <div><span>회수율</span><strong id="recoveryValue">0%</strong></div>
+        <div><span>적용 단가</span><strong id="rateValue">0원/kg</strong></div>
+        <div><span>입력 무게</span><strong id="weightValue">0kg</strong></div>
+      </div>
+      <div id="safetyNote" class="safety-note" hidden>냉매·배터리·오일이 포함된 제품은 임의 분해하지 말고, 고물상에 통째로 받는지 먼저 확인하세요.</div>
+      <button id="resetButton" class="secondary-button" type="button">다른 물건 계산하기</button>
+    </section>
+
+    <section class="history-section" aria-labelledby="history-title">
+      <div class="history-heading"><div><p class="eyebrow">LOCAL HISTORY</p><h2 id="history-title">최근 감정</h2></div><button id="clearHistory" class="text-button" type="button">전체 삭제</button></div>
+      <div id="historyList" class="history-list"><p class="empty-state">아직 계산한 물건이 없습니다.</p></div>
+    </section>
+  </main>
+
+  <footer><strong>줍줍값</strong><p>표시 금액은 사용자가 입력한 샘플 단가 기반 추정치입니다. 실제 매입 전 고물상에 확인하세요.</p></footer>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
